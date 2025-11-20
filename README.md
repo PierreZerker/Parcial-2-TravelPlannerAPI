@@ -42,7 +42,7 @@ API REST desarrollada con **NestJS** que permite gestionar países y planes de v
 1. Clona este repositorio:
 
    ```bash
-   git clone 
+   git clone https://github.com/PierreZerker/Parcial-2-TravelPlannerAPI
    ```
 2. Instala las dependencias:
 

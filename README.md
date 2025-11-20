@@ -198,7 +198,7 @@ Puedes probar manualmente cada uno de los endpoints de la API usando herramienta
 
 * **Ruta** : `GET /countries/XXX`
 * **Acción** : Intenta consultar un país que no existe.
-* **Resultado esperado** : Error 500 o 404 con mensaje de error.
+* **Resultado esperado** : Error 500 con mensaje de error.
 
 ---
 

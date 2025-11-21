@@ -1,5 +1,3 @@
-
-
 Hecho por: Jeronimo A. Pineda Cano - 202212778
 
 # 🌍 Parcial 2 - API de Planificación de Viajes
@@ -199,25 +197,3 @@ Puedes probar manualmente cada uno de los endpoints de la API usando herramienta
 * **Ruta** : `GET /countries/XXX`
 * **Acción** : Intenta consultar un país que no existe.
 * **Resultado esperado** : Error 500 con mensaje de error.
-
----
-
-## 🏗️ Arquitectura
-
-* **Inyección de dependencias** : El consumo de la API externa está encapsulado en un provider (`RestCountriesService`) e inyectado en el servicio de países.
-* **Caché de países** : Si un país no está en la base de datos, se consulta a la API externa, se almacena y se devuelve.
-* **Validación de DTOs** : Se utilizan DTOs con `class-validator` para validar los datos de entrada en los endpoints de creación de planes de viaje.
-
----
-
-## 📝 Notas
-
-* La base de datos utilizada es **SQLite** en modo archivo (`db.sqlite`).
-* El proyecto está desarrollado en **TypeScript** con NestJS.
-* No se requiere frontend. La API se puede probar con herramientas como Postman o Thunder Client.
-
----
-
-## 📄 Licencia
-
-Este proyecto no tiene licencia.

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TravelPlan } from '../entities/travel-plan.entity';
@@ -14,11 +14,20 @@ export class TravelPlansService {
   ) {}
 
   async create(createTravelPlanDto: CreateTravelPlanDto): Promise<TravelPlan> {
-    // Asegurarse de que el país exista (lo agrega a caché si no está)
-    await this.countriesService.findOneByCode(createTravelPlanDto.countryAlpha3Code);
+    try {
+      // Asegurarse de que el país exista (lo agrega a caché si no está)
+      await this.countriesService.findOneByCode(createTravelPlanDto.countryAlpha3Code);
 
-    const travelPlan = this.travelPlanRepository.create(createTravelPlanDto);
-    return await this.travelPlanRepository.save(travelPlan);
+      const travelPlan = this.travelPlanRepository.create(createTravelPlanDto);
+      return await this.travelPlanRepository.save(travelPlan);
+    } catch (error) {
+      // Si el error es del servicio de países, propagarlo
+      // Si es otro error, lanzar BadRequestException
+      if (error.status === 404) {
+        throw error; // NotFoundException del CountriesService
+      }
+      throw new BadRequestException(`Error al crear el plan de viaje: ${error.message}`);
+    }
   }
 
   async findAll(): Promise<TravelPlan[]> {

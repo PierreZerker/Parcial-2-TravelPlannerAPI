@@ -24,7 +24,4 @@ export class TravelPlan {
   @CreateDateColumn()
   createdAt: Date;
 
-  // Opcional: si usas TypeORM con relación real
-  // @ManyToOne(() => Country, { eager: true })
-  // country: Country;
 }

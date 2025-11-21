@@ -197,3 +197,127 @@ Puedes probar manualmente cada uno de los endpoints de la API usando herramienta
 * **Ruta** : `GET /countries/XXX`
 * **Acción** : Intenta consultar un país que no existe.
 * **Resultado esperado** : Error 500 con mensaje de error.
+
+---
+
+## 🔐 Extensión de la API
+
+### 🔑 Endpoint protegido
+
+Se ha añadido un endpoint para eliminar países de la caché:
+
+* `DELETE /countries/:alpha3Code`
+
+Este endpoint está protegido mediante un **guard de autorización** que verifica la presencia de un header `Authorization: Bearer 12345`. Solo se permite la operación si el token es correcto.
+
+Además,  **no se permite eliminar un país si tiene planes de viaje asociados** .
+
+### 🧾 Middleware de logging
+
+Se ha implementado un middleware global que registra cada solicitud a las rutas `/countries` y `/travel-plans`. El log incluye:
+
+* Método HTTP (`GET`, `POST`, `DELETE`, etc.)
+* Ruta solicitada
+* Código de estado de la respuesta
+* Tiempo total de procesamiento
+
+Los logs se imprimen en consola.
+
+---
+
+## 🧪 Validación y Pruebas de la Extensión
+
+### 🔑 Cómo validar el endpoint protegido y el guard
+
+El endpoint `DELETE /countries/:alpha3Code` está protegido por un **guard de autorización** que requiere un token válido en el header.
+
+#### Prueba 1: Eliminar país sin token (debe fallar)
+
+* **Ruta**: `DELETE /countries/COL`
+* **Headers**: Ninguno
+* **Resultado esperado**:
+  * Status: `401 Unauthorized`
+  * Mensaje: `"Token de autorización no proporcionado"`
+
+#### Prueba 2: Eliminar país con token inválido (debe fallar)
+
+* **Ruta**: `DELETE /countries/COL`
+* **Headers**: `Authorization: Bearer token_invalido`
+* **Resultado esperado**:
+  * Status: `401 Unauthorized`
+  * Mensaje: `"Token de autorización inválido"`
+
+#### Prueba 3: Eliminar país con token válido (debe funcionar)
+
+* **Ruta**: `DELETE /countries/COL`
+* **Headers**: `Authorization: Bearer 12345`
+* **Resultado esperado**:
+  * Status: `200 OK`
+  * Mensaje: `"País COL eliminado correctamente."`
+
+#### Prueba 4: Eliminar país que no existe (debe fallar)
+
+* **Ruta**: `DELETE /countries/XXX`
+* **Headers**: `Authorization: Bearer 12345`
+* **Resultado esperado**:
+  * Status: `404 Not Found`
+  * Mensaje: `"País no encontrado en la caché"`
+
+#### Prueba 5: Eliminar país con planes de viaje asociados (debe fallar)
+
+1. Primero crear un plan de viaje para un país (ej: ESP):
+
+   ```bash
+   POST /travel-plans
+   {
+     "countryAlpha3Code": "ESP",
+     "title": "Viaje a España",
+     "startDate": "2025-06-01",
+     "endDate": "2025-06-10"
+   }
+   ```
+2. Intentar eliminar el país:
+
+   * **Ruta**: `DELETE /countries/ESP`
+   * **Headers**: `Authorization: Bearer 12345`
+   * **Resultado esperado**:
+     * Status: `403 Forbidden`
+     * Mensaje: `"No se puede eliminar el país porque tiene planes de viaje asociados."`
+
+### 🧾 Cómo validar el middleware de logging
+
+El middleware registra automáticamente todas las peticiones a las rutas `/countries` y `/travel-plans`.
+
+#### Prueba del middleware:
+
+1. Realizar cualquier petición a las rutas protegidas:
+
+   ```bash
+   GET /countries
+   GET /travel-plans
+   POST /travel-plans
+   DELETE /countries/COL (con token válido)
+   ```
+2. **Revisar la consola** donde se ejecuta la aplicación NestJS. Deberías ver logs como:
+
+   ```
+   GET /countries 200 - 45ms
+   GET /travel-plans 200 - 23ms
+   POST /travel-plans 201 - 67ms
+   DELETE /countries/COL 200 - 89ms
+   ```
+3. **Verificar que el log incluye**:
+
+   - ✅ Método HTTP (`GET`, `POST`, `DELETE`)
+   - ✅ Ruta solicitada (/countries, /travel-plans, etc.)
+   - ✅ Código de estado de respuesta (200, 201, 404, etc.)
+   - ✅ Tiempo de procesamiento en milisegundos
+
+#### Nota importante:
+
+El middleware funciona para **todas las rutas** que comienzan con `/countries` o `/travel-plans`, incluyendo:
+
+* `/countries`
+* `/countries/COL`
+* `/travel-plans`
+* `/travel-plans/1`
